@@ -11,8 +11,13 @@
 using namespace std;
 //---------------------------------------------------------------------------
 
-
-
+//function Prototypes
+vector<string> explode(string inputstring, string delimiter);
+string ltrim(string str );
+string rtrim(string str );
+string trim(string str );
+bool allTablesExist(vector<vector<string>>tables);
+int parseQuery(string query);
 
 
 int parseQuery(string query)
@@ -116,6 +121,7 @@ vector<string> explode(string inputstring, string delimiter){
     return explodes;
 }
 
+
 string ltrim(string str ) {
 	str.erase(0,str.find_first_not_of(" ")); //trim left
 	return str;
@@ -129,7 +135,6 @@ string rtrim(string str ) {
 string trim(string str ) {
     return ltrim( rtrim( str ) );
 }
-
 
 bool allTablesExist(vector<vector<string>>tables){
 	   Database db;
