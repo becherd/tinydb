@@ -1,9 +1,9 @@
 bin/schopenhauerfriends$(EXEEXT): bin/queries/SchopenhauerFriends.o $(obj)
+	$(BUILDEXE)
 bin/popularprofs$(EXEEXT): bin/queries/popularProfs.o $(obj)
 	$(BUILDEXE)
 
 
 
 # Alias for all examples
-examples_bin: bin/schopenhauerfriends$(EXEEXT)
-examples_bin: bin/popularprofs$(EXEEXT)
+queries_bin: bin/schopenhauerfriends$(EXEEXT) bin/popularprofs$(EXEEXT)

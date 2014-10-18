@@ -1,15 +1,9 @@
 bin/schopenhauerfriends$(EXEEXT): bin/queries/SchopenhauerFriends.o $(obj)
+bin/popularprofs$(EXEEXT): bin/queries/popularProfs.o $(obj)
 	$(BUILDEXE)
 
-bin/selectexample$(EXEEXT): bin/examples/SelectExample.o $(obj)
-	$(BUILDEXE)
-
-bin/joinexample$(EXEEXT): bin/examples/JoinExample.o $(obj)
-	$(BUILDEXE)
-	
-bin/chiexample$(EXEEXT): bin/examples/ChiExample.o $(obj)
-	$(BUILDEXE)
 
 
 # Alias for all examples
-examples_bin: bin/scanexample$(EXEEXT) bin/selectexample$(EXEEXT) bin/joinexample$(EXEEXT) bin/chiexample$(EXEEXT)
+examples_bin: bin/schopenhauerfriends$(EXEEXT)
+examples_bin: bin/popularprofs$(EXEEXT)
