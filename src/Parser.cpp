@@ -5,7 +5,7 @@
  *      Author: david
  */
 
-#include "Parser.hpp";
+#include "Parser.hpp"
 
 //---------------------------------------------------------------------------
 using namespace std;
@@ -43,12 +43,9 @@ vector<string> fromVector = explode(from, ",");
 vector<string> whereVector = explode(where, " and ");
 
 
-
-
-
 //deal with select
 vector<vector<string>> selectVector2;
-for(int i=0; i<selectVector.size(); i++){
+for(int i=0; (unsigned)i<selectVector.size(); i++){
 	string strAtPos = trim(selectVector.at(i));
 
 
@@ -65,7 +62,7 @@ selectVector2.push_back(v);
 
 }
 
-for(int j=0; j<selectVector2.size(); j++){
+for(int j=0; (unsigned)j<selectVector2.size(); j++){
 	cout << selectVector2.at(j).at(0) << " - " << selectVector2.at(j).at(1) << "\n";
 }
 
@@ -75,26 +72,26 @@ for(int j=0; j<selectVector2.size(); j++){
 
 //deal with from
 vector<vector<string>> fromVector2;
-for(int i=0; i<fromVector.size(); i++){
+for(int i=0; (unsigned)i<fromVector.size(); i++){
 	string strAtPos = trim(fromVector.at(i));
 
 	fromVector2.push_back(explode(strAtPos, " "));
 }
 
-for(int j=0; j<fromVector2.size(); j++){
+for(int j=0; (unsigned)j<fromVector2.size(); j++){
 	cout << fromVector2.at(j).at(0) << " - " << fromVector2.at(j).at(1) << "\n";
 }
 
 
 //deal with where
 vector<vector<string>> whereVector2;
-for(int i=0; i<whereVector.size(); i++){
+for(int i=0; (unsigned)i<whereVector.size(); i++){
 	string strAtPos = trim(whereVector.at(i));
 
 	whereVector2.push_back(explode(strAtPos, "="));
 }
 
-for(int j=0; j<whereVector2.size(); j++){
+for(int j=0; (unsigned)j<whereVector2.size(); j++){
 	cout << whereVector2.at(j).at(0) << " - " << whereVector2.at(j).at(1) << "\n";
 }
 
@@ -140,7 +137,7 @@ bool allTablesExist(vector<vector<string>>tables){
 	   Database db;
 	   db.open("data/uni");
 	   bool found=true;
-	   for(int i=0; i<tables.size(); i++){
+	   for(int i=0; (unsigned)i<tables.size(); i++){
 	   try{
 		   db.getTable(tables.at(i).at(0));
 	   }catch(int e){
