@@ -1,6 +1,6 @@
-bin/schopenhauerfriends$(EXEEXT): bin/queries/SchopenhauerFriends.o $(obj)
+bin/schopenhauerfriends$(EXEEXT): bin/queries/SchopenhauerFriends.o $(obj_rts)
 	$(BUILDEXE)
-bin/popularprofs$(EXEEXT): bin/queries/popularProfs.o $(obj)
+bin/popularprofs$(EXEEXT): bin/queries/popularProfs.o $(obj_rts)
 	$(BUILDEXE)
 
 

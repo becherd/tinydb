@@ -30,3 +30,6 @@
 #eclipse project
 .cproject
 .project
+
+#other
+*~

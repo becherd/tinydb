@@ -1,13 +1,13 @@
-bin/scanexample$(EXEEXT): bin/examples/ScanExample.o $(obj)
+bin/scanexample$(EXEEXT): bin/examples/ScanExample.o $(obj_rts)
 	$(BUILDEXE)
 
-bin/selectexample$(EXEEXT): bin/examples/SelectExample.o $(obj)
+bin/selectexample$(EXEEXT): bin/examples/SelectExample.o $(obj_rts)
 	$(BUILDEXE)
 
-bin/joinexample$(EXEEXT): bin/examples/JoinExample.o $(obj)
+bin/joinexample$(EXEEXT): bin/examples/JoinExample.o $(obj_rts)
 	$(BUILDEXE)
 	
-bin/chiexample$(EXEEXT): bin/examples/ChiExample.o $(obj)
+bin/chiexample$(EXEEXT): bin/examples/ChiExample.o $(obj_rts)
 	$(BUILDEXE)
 
 
