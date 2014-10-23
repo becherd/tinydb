@@ -4,6 +4,7 @@
 #include <vector>
 #include <exception>
 #include <utility>
+#include <stdexcept>
 #include "Attribute.hpp"
 #include "Database.hpp"
 #include "cts/parser/SQLParser.hpp"

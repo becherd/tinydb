@@ -6,6 +6,7 @@
 #include <exception>
 #include <vector>
 #include <utility>
+#include <stdexcept>
 #include "Attribute.hpp"
 #include "cts/parser/SQLLexer.hpp"
 

@@ -13,7 +13,7 @@ CHECKDIR=@mkdir -p $(dir $@)
 EXEEXT:=
 endif
 
-all: bin/admin$(EXEEXT) examples_bin queries_bin
+all: bin/admin$(EXEEXT) bin/isql$(EXEEXT) examples_bin queries_bin
 
 include src/LocalMakefile
 include examples/LocalMakefile
