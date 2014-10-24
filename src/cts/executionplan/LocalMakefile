@@ -1,0 +1,2 @@
+obj_executionplan:=					\
+	bin/cts/executionplan/ExecutionPlan.o

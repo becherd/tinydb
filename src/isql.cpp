@@ -5,6 +5,7 @@
 #include "cts/parser/SQLLexer.hpp"
 #include "cts/parser/SQLParser.hpp"
 #include "cts/semana/SemanticAnalysis.hpp"
+#include "cts/executionplan/ExecutionPlan.hpp"
 
 using namespace std;
 
@@ -85,6 +86,10 @@ int main(int argc, char* argv[]){
 	}
 	cout << "Semantic Analysis successful" << endl;
 
+
+	ExecutionPlan ep(res, db);
+	ep.scanTables();
+	ep.fillRegister();
 	return 0;
 
 }

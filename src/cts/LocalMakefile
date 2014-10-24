@@ -1,2 +1,3 @@
 include src/cts/parser/LocalMakefile
 include src/cts/semana/LocalMakefile
+include src/cts/executionplan/LocalMakefile
