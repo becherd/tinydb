@@ -21,14 +21,17 @@ private:
 	vector<unique_ptr<Tablescan>> tableScans;
 
 	vector<pair<SQLParser::RelationAttribute, const Register*>> attributes;
-public:
-	ExecutionPlan(SQLParser::Result& r, Database& db);
-	~ExecutionPlan();
-
-
 
 	void scanTables();
 	void fillRegister ();
+public:
+	ExecutionPlan(SQLParser::Result& r, Database& db);
+	~ExecutionPlan(){};
+
+
+
+
+	void generateExecutionPlan ();
 };
 
 

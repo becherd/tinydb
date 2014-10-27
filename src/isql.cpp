@@ -9,7 +9,7 @@
 
 using namespace std;
 
-using Token = SQLLexer::Token;
+typedef SQLLexer::Token Token;
 
 string getQuery(ifstream& in){
 	ostringstream buf;
@@ -88,8 +88,7 @@ int main(int argc, char* argv[]){
 
 
 	ExecutionPlan ep(res, db);
-	ep.scanTables();
-	ep.fillRegister();
+	ep.generateExecutionPlan();
 	return 0;
 
 }

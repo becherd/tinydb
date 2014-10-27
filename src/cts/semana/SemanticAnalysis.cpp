@@ -1,8 +1,8 @@
 #include "cts/semana/SemanticAnalysis.hpp"
 
 using namespace std;
-using RelationAttribute = SQLParser::RelationAttribute;
-using Constant = SQLParser::Constant;
+typedef SQLParser::RelationAttribute RelationAttribute;
+typedef SQLParser::Constant Constant;
 
 //---------------------------------------------------------------------------
 // Semantic Analysis.
