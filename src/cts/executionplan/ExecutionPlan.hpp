@@ -7,7 +7,13 @@
 #include <memory>
 #include "cts/parser/SQLParser.hpp"
 #include "Database.hpp"
+
 #include "operator/Tablescan.hpp"
+#include "operator/CrossProduct.hpp"
+#include "operator/Selection.hpp"
+#include "operator/Projection.hpp"
+#include "operator/Printer.hpp"
+#include "operator/Chi.hpp"
 
 using namespace std;
 
@@ -16,7 +22,6 @@ class ExecutionPlan {
 private:
 	Database * db;
 	SQLParser::Result r;
-	vector<unique_ptr<Tablescan>> tables;
 	vector<Table*> tablePointers;
 	vector<unique_ptr<Tablescan>> tableScans;
 
@@ -24,6 +29,7 @@ private:
 
 	void scanTables();
 	void fillRegister ();
+	const Register* getRegister (SQLParser::RelationAttribute attr);
 public:
 	ExecutionPlan(SQLParser::Result& r, Database& db);
 	~ExecutionPlan(){};

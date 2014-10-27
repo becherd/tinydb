@@ -33,9 +33,8 @@ void ExecutionPlan::scanTables() {
  */
 void ExecutionPlan::fillRegister() {
 
-	vector<SQLParser::RelationAttribute> allAttributes = r.projections;
-	vector<SQLParser::RelationAttribute> selectionAttributes;
-	vector<SQLParser::RelationAttribute> joinConditionAttributes;
+	vector<SQLParser::RelationAttribute> allAttributes;
+
 
 	for (unsigned int i = 0; i < r.projections.size(); i++) {
 		SQLParser::RelationAttribute attribute = r.projections.at(i);
@@ -71,7 +70,7 @@ void ExecutionPlan::fillRegister() {
 		vector<SQLParser::Relation> relations = r.relations;
 		unsigned int index = 0;
 		for (index = 0; index < relations.size(); index++) {
-			if (relations.at(index).binding == attribute.relation) {
+			if (relations.at(index).binding.compare(attribute.relation)==0) {
 				break;
 			}
 		}
@@ -88,7 +87,32 @@ void ExecutionPlan::fillRegister() {
 void ExecutionPlan::generateExecutionPlan() {
 	scanTables();
 	fillRegister();
-	//TODO
+	vector<unique_ptr<Operator>> query;
+
+	for(int i=0; i<r.selections.size(); i++){
+		//find tablescan
+		unsigned int index=0;
+		for(; index<r.relations.size(); index++){
+			if(r.selections.at(i).first.relation.compare(r.relations.at(index).binding) == 0){
+				break;
+			}
+		}
+
+
+		unique_ptr<Tablescan> tableS(move(tableScans.at(index)));
+
+		const Register* attributeRegister = getRegister(r.selections.at(i).first);
+
+		Register* constantRegister = new Register();
+		constantRegister ->setString(r.selections.at(i).second.value);
+
+		unique_ptr<Selection> select(new Selection(move(tableS),attributeRegister,constantRegister));
+		query.push_back(move(select));
+		//TODO: replace base relation with relations after selection
+	}
+
+
+	//TODO Joins
 }
 
 bool vectorContainsAttribute(vector<SQLParser::RelationAttribute> vector,
@@ -102,4 +126,16 @@ bool vectorContainsAttribute(vector<SQLParser::RelationAttribute> vector,
 	}
 	return found;
 
+}
+
+const Register* ExecutionPlan::getRegister (SQLParser::RelationAttribute attr){
+	const Register* reg = NULL;
+	for(unsigned int i=0; i<attributes.size(); i++){
+		if(attributes.at(i).first.getName().compare(attr.getName())){
+			reg=attributes.at(i).second;
+			break;
+		}
+	}
+
+	return reg;
 }
