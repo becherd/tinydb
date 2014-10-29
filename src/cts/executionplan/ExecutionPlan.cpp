@@ -89,7 +89,13 @@ void ExecutionPlan::generateExecutionPlan() {
 	fillRegister();
 	vector<unique_ptr<Operator>> query;
 
-	for(int i=0; i<r.selections.size(); i++){
+	//copy base relations into query
+	for(unsigned int i=0; i<tableScans.size(); i++){
+		query.push_back(move(tableScans.at(i)));
+	}
+
+
+	for(unsigned int i=0; i<r.selections.size(); i++){
 		//find tablescan
 		unsigned int index=0;
 		for(; index<r.relations.size(); index++){
@@ -99,7 +105,7 @@ void ExecutionPlan::generateExecutionPlan() {
 		}
 
 
-		unique_ptr<Tablescan> tableS(move(tableScans.at(index)));
+		unique_ptr<Operator> tableS(move(query.at(index)));
 
 		const Register* attributeRegister = getRegister(r.selections.at(i).first);
 
@@ -107,12 +113,65 @@ void ExecutionPlan::generateExecutionPlan() {
 		constantRegister ->setString(r.selections.at(i).second.value);
 
 		unique_ptr<Selection> select(new Selection(move(tableS),attributeRegister,constantRegister));
-		query.push_back(move(select));
-		//TODO: replace base relation with relations after selection
+		//replace base relation with relations after selection
+		query.at(index) = move(select);
+
+	}
+
+	//do cross product
+	vector<unique_ptr<Operator>> cross;
+	cross.push_back(move(query.at(0)));
+
+	for(unsigned int i=1; i<query.size(); i++){
+		//canonical translation of cross product
+
+		cross.push_back(unique_ptr<CrossProduct>(new CrossProduct(move(cross.at(i-1)), move(query.at(i)))));
 	}
 
 
-	//TODO Joins
+
+	//Join
+	vector<unique_ptr<Operator>> join;
+	join.push_back(move(cross.at(0)));
+	for(unsigned int i=0; i<r.joinConditions.size(); i++){
+		const Register* joinAttribute1 = getRegister(r.joinConditions.at(i).first);
+		const Register* joinAttribute2 = getRegister(r.joinConditions.at(i).second);
+		join.push_back(unique_ptr<Selection> (new Selection(move(join.at(i)), joinAttribute1, joinAttribute2)));
+	}
+
+
+	cout << "Join" << endl;
+		//Print result
+	int size = join.size();
+	cout << "size: "<< size << endl;
+
+	//join.at(2).reset();
+	//cout << "reset ok " << endl;
+
+	unique_ptr<Operator> result = move(join.at(0));
+
+		Printer out1(move(result));
+		   out1.open();
+		   while (out1.next());
+		   out1.close();
+cout << "Print end" << endl;
+
+	vector<const Register*> projectionRegister;
+	for(unsigned int i=0; i<r.projections.size(); i++){
+		projectionRegister.push_back(getRegister(r.projections.at(i)));
+
+	}
+	unique_ptr<Projection> projection = unique_ptr<Projection>(new Projection(move(cross.at(cross.size()-1)), projectionRegister));
+
+/*
+	cout << "Projection" << endl;
+	//Print result
+	Printer out(move(projection));
+
+	   out.open();
+	   while (out.next());
+	   out.close();
+	   */
 }
 
 bool vectorContainsAttribute(vector<SQLParser::RelationAttribute> vector,
