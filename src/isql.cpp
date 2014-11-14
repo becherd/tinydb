@@ -6,6 +6,7 @@
 #include "cts/parser/SQLParser.hpp"
 #include "cts/semana/SemanticAnalysis.hpp"
 #include "cts/executionplan/ExecutionPlan.hpp"
+#include "cts/graph/queryGraph.hpp"
 
 using namespace std;
 
@@ -89,6 +90,11 @@ int main(int argc, char* argv[]){
 
 	ExecutionPlan ep(res, db);
 	ep.generateExecutionPlan();
+
+
+	queryGraph q(res, db);
+	q.generateQueryGraph();
+
 	return 0;
 
 }

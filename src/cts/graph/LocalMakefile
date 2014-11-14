@@ -1,0 +1,3 @@
+obj_graph:=					\
+	bin/cts/graph/Graph.o   \
+	bin/cts/graph/queryGraph.o
