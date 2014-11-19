@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
-
+#include <regex>
 #include <memory>
 #include "cts/parser/SQLParser.hpp"
 #include "Database.hpp"
@@ -11,6 +11,7 @@
 #include "operator/Tablescan.hpp"
 #include "operator/CrossProduct.hpp"
 #include "operator/Selection.hpp"
+#include "operator/HashJoin.hpp"
 #include "operator/Projection.hpp"
 #include "operator/Printer.hpp"
 #include "operator/Chi.hpp"
@@ -22,16 +23,26 @@ class ExecutionPlan {
 private:
 	Database * db;
 	SQLParser::Result r;
+	string joinTree;
 	vector<Table*> tablePointers;
 	vector<unique_ptr<Tablescan>> tableScans;
-
+	vector<pair<string, unique_ptr<Operator>>> joinPlan;
 	vector<pair<SQLParser::RelationAttribute, const Register*>> attributes;
 
+	unsigned int findIndexOfRelation(string binding);
 	void scanTables();
 	void fillRegister ();
 	const Register* getRegister (SQLParser::RelationAttribute attr);
+	pair<string,string> getNextTwoRelationBindings();
+	pair<string, string> splitStringAtFirstDelimiter(string s, string delimiter);
+	vector<string> getBindings(string bindings);
+	string generateNewRelationBinding(string bindingLeft, string bindingRight);
+	string replaceFirst(string s, string pattern, string replacement);
+	bool vectorContainsAttribute(vector<SQLParser::RelationAttribute> vector,
+			SQLParser::RelationAttribute attribute);
+
 public:
-	ExecutionPlan(SQLParser::Result& r, Database& db);
+	ExecutionPlan(string joinTree, SQLParser::Result& r,Database& db);
 	~ExecutionPlan(){};
 
 

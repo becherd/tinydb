@@ -88,12 +88,14 @@ int main(int argc, char* argv[]){
 	cout << "Semantic Analysis successful" << endl;
 
 
-	ExecutionPlan ep(res, db);
-	ep.generateExecutionPlan();
+
 
 
 	queryGraph q(res, db);
-	q.generateQueryGraph();
+	string joinTree= q.generateQueryGraph();
+
+	ExecutionPlan ep(joinTree, res, db);
+	ep.generateExecutionPlan();
 
 	return 0;
 

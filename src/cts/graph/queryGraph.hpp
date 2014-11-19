@@ -29,7 +29,7 @@ private:
 		~queryGraph();
 
 
-		void generateQueryGraph();
+		string generateQueryGraph();
 	private:
 		void addVertices(std::vector<SQLParser::Relation> relations);
 		void addEdges(vector<pair<SQLParser::RelationAttribute, SQLParser::RelationAttribute>> joinConditions);

@@ -19,7 +19,7 @@ queryGraph::~queryGraph() {
 
 }
 
-void queryGraph::generateQueryGraph() {
+string queryGraph::generateQueryGraph() {
 	cout << "\n\n---------- Query Graph ----------" << endl;
 
 	vector<SQLParser::Relation> relations = res.relations;
@@ -32,7 +32,7 @@ void queryGraph::generateQueryGraph() {
 	addEdges(joinConditions);
 	addSelections(selections);
 
-	g->print_connectivity_components();
+	return g->Greedy_operator_ordering();
 }
 
 unsigned int queryGraph::getSizeOfRelation(std::string relationName) {

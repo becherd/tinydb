@@ -4,14 +4,13 @@
 #include <vector>
 #include <string>
 #include <iostream>
-//#include "Vertex.hpp"
+#include <limits>
 #include <stdexcept>
-//#include "Edge.hpp"
 class Vertex;
 class Edge;
 class Graph{
 	private:
-		std::vector<Vertex> *vertices;
+		std::vector<Vertex*> *vertices;
 		int num_components;//only used for printing
 	public:
 		Graph();
@@ -21,12 +20,16 @@ class Graph{
 		void normalize();//combines multi-edges in one edge, that can occur if a join has more than one predicate 
 						//or if more than one selection is applied to a base relation
 		Edge* from_to(Vertex* from, Vertex* to);
-				
+		void collapse(unsigned int Vertex1,unsigned int Vertex2); //should be performed only on normalized undirected graph!!
+		Edge* find_min_edge();	//finds the next edge to collapse for GOO	
+		void push_down_selections();	
 		
 	public:
 		void print_connectivity_components();
 		void create_new_vertex(int size, std::string name);
 		void create_new_edge(std::string beginning, std::string destiny, double weight, std::string edge_name, bool directed=false);
+		std::string Greedy_operator_ordering();
+		
 
 };
 
@@ -36,8 +39,8 @@ class Vertex{
 	friend class Graph;
 	private:
 		int size;
-		std::string name;//must be unique (and shorter or equal than 15 chars)
-		std::vector<Edge> *outgoings;
+		std::string name;//must be unique
+		std::vector<Edge*> *outgoings;
 		int component;//for printing componentwise
 	public:
 		Vertex(int sizee, std::string namee);
