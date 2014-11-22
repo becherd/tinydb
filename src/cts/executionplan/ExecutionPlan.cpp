@@ -62,20 +62,19 @@ void ExecutionPlan::scanTables() {
 			Table& mytable=db->getTable(r.relations.at(i).name);
 
 			cout<<"Scan table : "<<r.relations.at(i).name<<endl;
-			Tablescan* tab=new Tablescan(mytable);
+			//Tablescan* tab=new Tablescan(mytable);
 			Tablescan* tab2=new Tablescan(mytable);
-			if(tab==NULL){
-				throw "";			
-			}
-			unique_ptr<Tablescan> thisTable(tab);
+
+
+			//unique_ptr<Tablescan> thisTable(tab);
 			unique_ptr<Tablescan> thisTable2(tab2);
-			if(thisTable==NULL){
-				throw "";			
-			}
+			//if(thisTable==NULL){
+			//	throw "";
+			//}
 			tableScans.push_back(move(thisTable2));
 			// If you use move(unique ptr p), then p will be set to NULL (compare documentation of unique_ptr!!!)  
 
-			joinPlan.push_back({r.relations.at(i).binding, move(thisTable)});
+			//joinPlan.push_back({r.relations.at(i).binding, move(tableScans[i])});
 		}
 }
 
@@ -136,6 +135,11 @@ void ExecutionPlan::fillRegister() {
 		attributes.push_back(
 				{ allAttributes.at(i), tableScans[index]->getOutput(allAttributes.at(i).name) });
 	}
+
+	for(unsigned int i=0; i<r.relations.size(); i++){
+		joinPlan.push_back({r.relations.at(i).binding, move(tableScans[i])});
+	}
+
 }
 
 /**
@@ -171,7 +175,7 @@ void ExecutionPlan::generateExecutionPlan() {
 		cout<<r.selections.at(i).second.value<<endl;
 
 		unique_ptr<Selection> select(
-				new Selection(move(tableScans.at(index)), attributeRegister,
+				new Selection(move(joinPlan.at(index).second), attributeRegister,
 						constantRegister));
 
 
@@ -179,6 +183,7 @@ void ExecutionPlan::generateExecutionPlan() {
 
 		//replace base relation with relations after selection
 		joinPlan.at(index).second = move(select);
+
 
 
 
@@ -314,8 +319,6 @@ void ExecutionPlan::generateExecutionPlan() {
 
 
 	unique_ptr<HashJoin> hj(new HashJoin(move(table_left), move(table_right),joinAttribute1,joinAttribute2));
-	//unique_ptr<CrossProduct> hj(new CrossProduct(move(table_left),move(table_right)));
-	//unique_ptr<Selection> s2(new Selection(move(hj),joinAttribute2,joinAttribute1));
 
 
 	vector<unique_ptr<Operator>> vec_tmp;
@@ -346,13 +349,7 @@ void ExecutionPlan::generateExecutionPlan() {
 
 }
 
-	//Print result
-	cout << "\nResult of the query: "<<endl;
-	Printer out(move(joinPlan.at(joinPlan.size() - 1).second));
 
-	out.open();
-	while (out.next());
-	out.close();
 
 
 	//do projection
@@ -365,6 +362,14 @@ void ExecutionPlan::generateExecutionPlan() {
 	unique_ptr<Projection> projection = unique_ptr<Projection>(
 			new Projection(move(joinPlan.at(joinPlan.size() - 1).second), projectionRegister));
 	
+
+	//Print result
+	cout << "\nResult of the query: "<<endl;
+	Printer out(move(projection));
+
+	out.open();
+	while (out.next());
+	out.close();
 
 }
 
