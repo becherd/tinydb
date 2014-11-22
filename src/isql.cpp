@@ -68,7 +68,7 @@ int main(int argc, char* argv[]){
 	SQLParser parser(lexer);
 
 	try{
-		parser.parse();
+		parser.parse(db);
 	}
 	catch (runtime_error& e){
 		cout << "exception: "<<e.what() << endl;
@@ -76,6 +76,11 @@ int main(int argc, char* argv[]){
 	}
 
 	SQLParser::Result res = parser.getParserResult();
+
+
+
+
+
 	displayParserResult(res);
 	try {
 		SemanticAnalysis semana(db);

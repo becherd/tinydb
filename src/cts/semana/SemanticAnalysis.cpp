@@ -18,9 +18,11 @@ void SemanticAnalysis::analyze(SQLParser::Result& result){
 		checkRelation(r);
 	}
 
-	/// TODO: handle the SELECT * case here
-	
+
 	for (auto& attr: result.projections){
+		if(attr.name=="*"){
+			break;
+		}
 		checkAttribute(attr);
 	}
 

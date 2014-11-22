@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include "Attribute.hpp"
 #include "cts/parser/SQLLexer.hpp"
+#include "Database.hpp"
 
 class SQLLexer;
 
@@ -22,6 +23,7 @@ private:
 
 	void parseWhere();
 
+	void handleSelectStar(Database &db);
 public:
 	class ParserException: public std::runtime_error {
 	public:
@@ -31,7 +33,7 @@ public:
 	explicit SQLParser(SQLLexer& lexer);
 	~SQLParser();
 
-	void parse();
+	void parse(Database &db);
 
 	// relation in the FROM clause
 	struct Relation{

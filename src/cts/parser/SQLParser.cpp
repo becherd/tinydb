@@ -189,11 +189,30 @@ void SQLParser::parseWhere(){
 
 }
 
-void SQLParser::parse(){
+
+void SQLParser::handleSelectStar(Database &db){
+	//handle select * case (add all attributes from the tables to projections)
+		if(result.projections.size()==0){
+			for(unsigned int i=0; i<result.relations.size(); i++){
+				Table& t = db.getTable(result.relations.at(i).name);
+				for(unsigned int j=0; j<t.getAttributeCount(); j++){
+					SQLParser::RelationAttribute ra={result.relations.at(i).binding, t.getAttribute(j).getName(), true};
+					result.projections.push_back(ra);
+				}
+			}
+		}
+}
+
+void SQLParser::parse(Database &db){
 	
 	parseSelect();
 	parseFrom();
 	parseWhere();
+
+
+	handleSelectStar(db);
+
+
 
 	if (lexer.getNext()!=SQLLexer::Eof){
 		throw ParserException("Syntax error in the query");

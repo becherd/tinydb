@@ -45,29 +45,8 @@ unsigned int queryGraph::getNumberOfDistinctValues(std::string relationName,
 		std::string column) {
 	Table& t = queryGraph::db->getTable(relationName);
 
-	vector<Register> values;
-
-	unsigned int numberOfDistinctValues = 0;
-
-	Tablescan scan(t);
-	const Register* r = scan.getOutput(column);
-
-	scan.open();
-	while (scan.next()) {
-		const Register* value = r;
-		bool found = false;
-		for (unsigned int i = 0; i < values.size(); i++) {
-			if (values.at(i) == *value) {
-				found = true;
-				break;
-			}
-		}
-		if (!found) {
-			numberOfDistinctValues++;
-			values.push_back(*value);
-		}
-	}
-	scan.close();
+	unsigned int numberOfDistinctValues = t.getAttribute(
+			t.findAttribute(column)).getUniqueValues();
 
 	return numberOfDistinctValues;
 
