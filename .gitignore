@@ -35,3 +35,9 @@
 #other
 *~
 /bin/
+
+#tpch
+/data/tpch/*
+!/data/tpch/loadtpch-cpp
+!/data/tpch
+!/data/tpch/*.tbl
