@@ -1,5 +1,4 @@
 #include "cts/executionplan/ExecutionPlan.hpp"
-//#include <memory>
 
 using namespace std;
 
@@ -10,7 +9,6 @@ ExecutionPlan::ExecutionPlan(string joinTree, SQLParser::Result& r,Database& db)
 	ExecutionPlan::joinTree=joinTree;
 	ExecutionPlan::db = &db;
 }
-
 
 
 
@@ -62,24 +60,20 @@ void ExecutionPlan::scanTables() {
 			Table& mytable=db->getTable(r.relations.at(i).name);
 
 			cout<<"Scan table : "<<r.relations.at(i).name<<endl;
-			//Tablescan* tab=new Tablescan(mytable);
-			Tablescan* tab2=new Tablescan(mytable);
 
+			Tablescan* tab=new Tablescan(mytable);
 
-			//unique_ptr<Tablescan> thisTable(tab);
-			unique_ptr<Tablescan> thisTable2(tab2);
-			//if(thisTable==NULL){
-			//	throw "";
-			//}
-			tableScans.push_back(move(thisTable2));
-			// If you use move(unique ptr p), then p will be set to NULL (compare documentation of unique_ptr!!!)  
+			unique_ptr<Tablescan> thisTable(tab);
 
-			//joinPlan.push_back({r.relations.at(i).binding, move(tableScans[i])});
+			tableScans.push_back(move(thisTable));
 		}
 }
 
 
-
+/**
+ * find the index of a relation via its binding
+ * the index of the relation in r.relations eaquals the index of the TableScan in the vector tableScans
+ */
 unsigned int ExecutionPlan::findIndexOfRelation(string binding){
 	vector<SQLParser::Relation> relations = r.relations;
 			unsigned int index = 0;
@@ -136,11 +130,202 @@ void ExecutionPlan::fillRegister() {
 				{ allAttributes.at(i), tableScans[index]->getOutput(allAttributes.at(i).name) });
 	}
 
-	for(unsigned int i=0; i<r.relations.size(); i++){
-		joinPlan.push_back({r.relations.at(i).binding, move(tableScans[i])});
-	}
 
 }
+
+
+/**
+ * Apply all Selections of the form <attribute>='<constant>' to the joinPlan
+ */
+void ExecutionPlan::applySelections(){
+	
+	//replace base relations by resulting tables after selection if there is a selection <attribute>='<constant>'
+		cout<<"---Selections:---"<<endl;
+		for (unsigned int i = 0; i < r.selections.size(); i++) {
+			//find tablescan using the binding
+			unsigned int index = 0;
+			for (; index < r.relations.size(); index++) {
+				if (r.selections.at(i).first.relation.compare(
+						r.relations.at(index).binding) == 0) {
+					break;
+				}
+			}
+
+			//apply selections
+			const Register* attributeRegister = getRegister(
+					r.selections.at(i).first);
+
+			Register* constantRegister = new Register();
+
+			constantRegister->setString(r.selections.at(i).second.value);
+			cout<<"Register:  "<<r.selections.at(i).first.getName()<<"="<<r.selections.at(i).second.value<<endl;
+
+			unique_ptr<Selection> select(
+					new Selection(move(joinPlan.at(index).second), attributeRegister,
+							constantRegister));
+
+
+			//replace base relation with relations after selection
+			joinPlan.at(index).second = move(select);
+
+
+			if(joinPlan.at(index).second==NULL){
+				throw "";
+			}
+		}
+}
+
+
+void ExecutionPlan::applyJoins(){
+	vector<pair<SQLParser::RelationAttribute, SQLParser::RelationAttribute>> joinConditions;
+
+		cout << "---"<<endl;
+		cout << "Join tree: " << joinTree << endl;
+		while(joinTree.find("(")!=std::string::npos){
+
+
+		pair<string,string> nextRelationBindings = getNextTwoRelationBindings();
+
+
+		unique_ptr<Operator> table_left;
+		unique_ptr<Operator> table_right;
+
+		for(unsigned int i=0; i<joinPlan.size(); i++){
+
+			if(joinPlan.at(i).first.compare(nextRelationBindings.first)==0){
+				if(joinPlan.at(i).second==NULL){
+					throw "";
+				}
+				table_left=move(joinPlan.at(i).second);
+				joinPlan.erase(joinPlan.begin()+i);
+
+				if(table_left==NULL){
+					throw"";
+				}
+
+				i--;
+			}
+			else if(joinPlan.at(i).first.compare(nextRelationBindings.second)==0){
+						table_right=move(joinPlan.at(i).second);
+						joinPlan.erase(joinPlan.begin()+i);
+						i--;
+						if(table_right==NULL){
+										throw"";
+									}
+			}
+
+
+		}
+		
+		if(table_left==NULL || table_right==NULL){
+			throw "";
+		}
+
+
+		vector<string> bindingsLeftTable = getBindings(nextRelationBindings.first);
+		vector<string> bindingsRightTable = getBindings(nextRelationBindings.second);
+
+		cout<<"Bindings Left Table"<<endl;
+		for(unsigned int f=0; f<bindingsLeftTable.size(); f++){
+		cout << bindingsLeftTable[f]<<" ";
+		}
+		cout << endl;
+		cout<<"Bindings Right Table"<<endl;
+			for(unsigned int f=0; f<bindingsRightTable.size(); f++){
+			cout << bindingsRightTable[f]<<" ";
+			}
+		cout << endl;
+
+
+		//delete the joinConditions vector, we need a new one now
+		joinConditions.erase(joinConditions.begin(), joinConditions.end());
+		for(unsigned int i=0; i<r.joinConditions.size(); i++){
+			string leftBinding=r.joinConditions.at(i).first.relation;
+			string rightBinding=r.joinConditions.at(i).second.relation;
+
+
+
+			for(unsigned int j=0; j<bindingsLeftTable.size(); j++){
+				for(unsigned int k=0; k<bindingsRightTable.size(); k++){
+					if(leftBinding.compare(bindingsLeftTable.at(j))==0 && rightBinding.compare(bindingsRightTable.at(k))==0){
+									joinConditions.push_back({r.joinConditions.at(i).first, r.joinConditions.at(i).second});
+									}
+					else if(rightBinding.compare(bindingsLeftTable.at(j))==0 && leftBinding.compare(bindingsRightTable.at(k))==0){
+									joinConditions.push_back({r.joinConditions.at(i).second, r.joinConditions.at(i).first});
+					}
+				}
+			}
+		}
+
+
+		if(table_left==NULL || table_right==NULL){
+			throw "";
+		}
+
+
+		//apply join conditions on the table
+		const Register* joinAttribute1 = getRegister(
+							joinConditions.at(0).first);
+
+		const Register* joinAttribute2 = getRegister(
+							joinConditions.at(0).second);
+
+		if(table_left==NULL||table_right==NULL)
+		{
+			throw "";
+		}
+
+		cout << "Now join " <<nextRelationBindings.first<< " with " << nextRelationBindings.second << " on ("<< joinConditions.at(0).first.getName()<<"="<<joinConditions.at(0).second.getName();
+
+
+
+		unique_ptr<HashJoin> hj(new HashJoin(move(table_left), move(table_right),joinAttribute1,joinAttribute2));
+
+
+		vector<unique_ptr<Operator>> vec_tmp;
+		vec_tmp.push_back(move(hj));
+
+		for(unsigned int i=1; i<joinConditions.size(); i++){//used if more than one joincondition is necessary
+
+			cout << " and "<< joinConditions.at(i).first.getName()<<"="<<joinConditions.at(i).second.getName();
+
+			const Register* joinAttribute1 = getRegister(
+							joinConditions.at(i).first);
+					const Register* joinAttribute2 = getRegister(
+							joinConditions.at(i).second);
+
+			unique_ptr<Selection> s(new Selection(move(vec_tmp[i-1]),joinAttribute1,joinAttribute2));
+			vec_tmp.push_back(move(s));
+		}
+		cout << ")"<<endl;
+
+		string newRelationBinding=generateNewRelationBinding(nextRelationBindings.first, nextRelationBindings.second);
+
+		joinPlan.push_back({newRelationBinding, move(vec_tmp[vec_tmp.size()-1])});
+
+		joinTree=replaceFirst(joinTree, "("+nextRelationBindings.first+" "+nextRelationBindings.second+")", newRelationBinding)+" ";
+
+		cout << "---"<<endl;
+		cout << "Join tree: " << joinTree << endl;
+
+	}
+}
+
+/**
+ * apply the projection to the JoinPlan
+ */
+unique_ptr<Projection> ExecutionPlan::applyProjection(){
+	vector<const Register*> projectionRegister;
+	for (unsigned int i = 0; i < r.projections.size(); i++) {
+		projectionRegister.push_back(getRegister(r.projections.at(i)));
+	}
+
+
+	unique_ptr<Projection> projection = unique_ptr<Projection>(
+			new Projection(move(joinPlan.at(joinPlan.size() - 1).second), projectionRegister));
+	return projection;
+}
+
 
 /**
  * generate execution plan using the tablescans and attributes vector
@@ -149,53 +334,14 @@ void ExecutionPlan::generateExecutionPlan() {
 	scanTables();
 
 	fillRegister();
-	
 
-	//replace base relations by resulting tables after selection if there is a selection <attribute>='<constant>'
-	cout<<"---Selections:---"<<endl;
-	for (unsigned int i = 0; i < r.selections.size(); i++) {
-		//find tablescan using the binding
-		unsigned int index = 0;
-		for (; index < r.relations.size(); index++) {
-			if (r.selections.at(i).first.relation.compare(
-					r.relations.at(index).binding) == 0) {
-				break;
-			}
-		}
-
-
-		cout<<"Register:  "<<r.selections.at(i).first.getName()<<"=";
-		//apply selections
-		const Register* attributeRegister = getRegister(
-				r.selections.at(i).first);
-
-		Register* constantRegister = new Register();
-
-		constantRegister->setString(r.selections.at(i).second.value);
-		cout<<r.selections.at(i).second.value<<endl;
-
-		unique_ptr<Selection> select(
-				new Selection(move(joinPlan.at(index).second), attributeRegister,
-						constantRegister));
-
-
-
-
-		//replace base relation with relations after selection
-		joinPlan.at(index).second = move(select);
-
-
-
-
-		if(joinPlan.at(index).second==NULL){
-			throw "";		
-		}
+	//fill JoinPlan with all relations. Store binding with the corresponding TableScan in this vector.
+	for(unsigned int i=0; i<r.relations.size(); i++){
+		joinPlan.push_back({r.relations.at(i).binding, move(tableScans[i])});
 	}
 
+	applySelections();
 
-
-
-	//vector<unique_ptr<Operator>> query;
 
 	//---------------------------------------------------------
 	/*
@@ -204,164 +350,9 @@ void ExecutionPlan::generateExecutionPlan() {
 	 *
 	 *Now apply the joins depending on the joinTree string
 	 */
-	vector<pair<SQLParser::RelationAttribute, SQLParser::RelationAttribute>> joinConditions;
+	applyJoins();
 
-	cout << "---"<<endl;
-	cout << "Join tree: " << joinTree << endl;
-	while(joinTree.find("(")!=std::string::npos){
-
-
-	pair<string,string> nextRelationBindings = getNextTwoRelationBindings();
-	
-		
-	unique_ptr<Operator> table_left;
-	unique_ptr<Operator> table_right;
-
-	for(unsigned int i=0; i<joinPlan.size(); i++){
-
-		if(joinPlan.at(i).first.compare(nextRelationBindings.first)==0){
-			if(joinPlan.at(i).second==NULL){
-				throw "";			
-			}
-			table_left=move(joinPlan.at(i).second);
-			joinPlan.erase(joinPlan.begin()+i); 
-
-			if(table_left==NULL){
-				throw"";
-			}
-
-			i--;
-		}
-		else if(joinPlan.at(i).first.compare(nextRelationBindings.second)==0){
-					table_right=move(joinPlan.at(i).second);
-					joinPlan.erase(joinPlan.begin()+i);
-					i--;
-					if(table_right==NULL){
-									throw"";
-								}
-					
-		}
-
-
-	}
-	
-	if(table_left==NULL || table_right==NULL){
-		throw "";	
-	}
-
-
-	vector<string> bindingsLeftTable = getBindings(nextRelationBindings.first);
-	vector<string> bindingsRightTable = getBindings(nextRelationBindings.second);
-
-	cout<<"Bindings Left Table"<<endl;
-	for(unsigned int f=0; f<bindingsLeftTable.size(); f++){
-	cout << bindingsLeftTable[f]<<" ";
-	}
-	cout << endl;
-	cout<<"Bindings Right Table"<<endl;
-		for(unsigned int f=0; f<bindingsRightTable.size(); f++){
-		cout << bindingsRightTable[f]<<" ";
-		}
-	cout << endl;
-
-
-	//delete the joinConditions vector, we need a new one now
-	joinConditions.erase(joinConditions.begin(), joinConditions.end());
-	for(unsigned int i=0; i<r.joinConditions.size(); i++){
-		string leftBinding=r.joinConditions.at(i).first.relation;
-		string rightBinding=r.joinConditions.at(i).second.relation;
-
-
-
-		for(unsigned int j=0; j<bindingsLeftTable.size(); j++){
-			for(unsigned int k=0; k<bindingsRightTable.size(); k++){
-				/*
-				if((leftBinding.compare(bindingsLeftTable.at(j))==0 && rightBinding.compare(bindingsRightTable.at(k))==0)
-						|| (rightBinding.compare(bindingsLeftTable.at(j))==0 && leftBinding.compare(bindingsRightTable.at(k))==0)){
-				joinConditions.push_back(r.joinConditions.at(i));
-				}
-				*/
-
-
-
-				if(leftBinding.compare(bindingsLeftTable.at(j))==0 && rightBinding.compare(bindingsRightTable.at(k))==0){
-								joinConditions.push_back({r.joinConditions.at(i).first, r.joinConditions.at(i).second});
-								}
-				else if(rightBinding.compare(bindingsLeftTable.at(j))==0 && leftBinding.compare(bindingsRightTable.at(k))==0){
-								joinConditions.push_back({r.joinConditions.at(i).second, r.joinConditions.at(i).first});
-				}
-			}
-		}
-	}
-	
-
-	if(table_left==NULL || table_right==NULL){
-		throw "";	
-	}
-
-
-
-	//apply join conditions on the table
-	
-	const Register* joinAttribute1 = getRegister(
-						joinConditions.at(0).first);
-		
-	const Register* joinAttribute2 = getRegister(
-						joinConditions.at(0).second);
-		
-	if(table_left==NULL||table_right==NULL)
-	{
-		throw "";		
-	}
-		
-	cout << "Now join " <<nextRelationBindings.first<< " with " << nextRelationBindings.second << " on "<< joinConditions.at(0).first.getName()<<"="<<joinConditions.at(0).second.getName()<<endl;
-
-
-
-	unique_ptr<HashJoin> hj(new HashJoin(move(table_left), move(table_right),joinAttribute1,joinAttribute2));
-
-
-	vector<unique_ptr<Operator>> vec_tmp;
-	vec_tmp.push_back(move(hj));
-
-	for(unsigned int i=1; i<joinConditions.size(); i++){//used if more than one joincondition is necessary
-		const Register* joinAttribute1 = getRegister(
-						joinConditions.at(i).first);
-				const Register* joinAttribute2 = getRegister(
-						joinConditions.at(i).second);
-	
-		unique_ptr<Selection> s(new Selection(move(vec_tmp[i-1]),joinAttribute1,joinAttribute2));
-		vec_tmp.push_back(move(s));
-	}
-	
-
-
-	
-	string newRelationBinding=generateNewRelationBinding(nextRelationBindings.first, nextRelationBindings.second);
-
-	joinPlan.push_back({newRelationBinding, move(vec_tmp[vec_tmp.size()-1])});
-
-
-	joinTree=replaceFirst(joinTree, "("+nextRelationBindings.first+" "+nextRelationBindings.second+")", newRelationBinding)+" ";
-
-	cout << "---"<<endl;
-	cout << "Join tree: " << joinTree << endl;
-
-}
-
-
-
-
-	//do projection
-	vector<const Register*> projectionRegister;
-	for (unsigned int i = 0; i < r.projections.size(); i++) {
-		projectionRegister.push_back(getRegister(r.projections.at(i)));
-	}
-	
-
-	unique_ptr<Projection> projection = unique_ptr<Projection>(
-			new Projection(move(joinPlan.at(joinPlan.size() - 1).second), projectionRegister));
-	
+	unique_ptr<Projection> projection = applyProjection();
 
 	//Print result
 	cout << "\nResult of the query: "<<endl;

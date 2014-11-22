@@ -32,6 +32,9 @@ private:
 	unsigned int findIndexOfRelation(string binding);
 	void scanTables();
 	void fillRegister ();
+	void applySelections();
+	void applyJoins();
+	unique_ptr<Projection> applyProjection();
 	const Register* getRegister (SQLParser::RelationAttribute attr);
 	pair<string,string> getNextTwoRelationBindings();
 	pair<string, string> splitStringAtFirstDelimiter(string s, string delimiter);
