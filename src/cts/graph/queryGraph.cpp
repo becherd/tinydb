@@ -32,8 +32,6 @@ string queryGraph::generateQueryGraph() {
 	addEdges(joinConditions);
 	addSelections(selections);
 
-	g->print_connectivity_components();
-
 	return g->Greedy_operator_ordering();
 }
 

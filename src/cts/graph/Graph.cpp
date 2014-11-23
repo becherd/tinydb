@@ -260,8 +260,8 @@ void Graph::push_down_selections(){
 	for(unsigned int i=0;i<vertices->size();i++){
 		for(unsigned int j=0;j<vertices->at(i)->outgoings->size();j++){
 			if(((unsigned int)vertices->at(i)->outgoings->at(j)->end_id)==i){
-				vertices->at(i)->size*=vertices->at(i)->outgoings->at(j)->weight;				
-								
+				vertices->at(i)->size=(vertices->at(i)->size*vertices->at(i)->outgoings->at(j)->weight)+1;
+
 				delete(vertices->at(i)->outgoings->at(j));
 				vertices->at(i)->outgoings->erase(vertices->at(i)->outgoings->begin()+j);	
 				j--;		
@@ -279,7 +279,7 @@ void Graph::collapse(unsigned int Vertex1,unsigned int Vertex2){
 
 
 	
-	int size_of_v=(int)((double(vertices->at(Vertex1)->size))*((double)vertices->at(Vertex2)->size)*from_to(vertices->at(Vertex1),vertices->at(Vertex2))->weight);
+	int size_of_v=(int)((double(vertices->at(Vertex1)->size))*((double)vertices->at(Vertex2)->size)*from_to(vertices->at(Vertex1),vertices->at(Vertex2))->weight)+1;
 	std::string	name_of_v=std::string("(")+=vertices->at(Vertex1)->name+=std::string(" ")+=vertices->at(Vertex2)->name+=std::string(")");
 	create_new_vertex(size_of_v,name_of_v);
 	
@@ -370,13 +370,22 @@ Edge* Graph::find_min_edge(){
 			}
 		}	
 	}
+	std::cout << "Select edge from " << vertices->at(minEdge->begin_id)->name << " to " << vertices->at(minEdge->end_id)->name << " with cost " << ((int)min+1) << std::endl;
+
 	return minEdge;
 }
 
 
 std::string Graph::Greedy_operator_ordering(){
+
 	push_down_selections();
 	normalize();
+
+	print_connectivity_components();
+
+
+	std::cout << "\nExecute Greedy Operator Ordering" << std::endl;
+
 	void *e;
 	while(vertices->size()>1){
 		e=find_min_edge();
@@ -387,6 +396,7 @@ std::string Graph::Greedy_operator_ordering(){
 		collapse(((Edge*) e)->begin_id,((Edge*) e)->end_id);
 		normalize();	
 	}
+	std::cout << std::endl;
 	if(vertices->size()==1){
 		return vertices->at(0)->name;
 	}
