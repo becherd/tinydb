@@ -4,6 +4,8 @@
 #include <vector>
 #include <iostream>
 #include <regex>
+#include <iterator>
+
 #include <memory>
 #include "cts/parser/SQLParser.hpp"
 #include "Database.hpp"
@@ -34,6 +36,7 @@ private:
 	void fillRegister ();
 	void applySelections();
 	void applyJoins();
+	void printJoinTree();
 	unique_ptr<Projection> applyProjection();
 	const Register* getRegister (SQLParser::RelationAttribute attr);
 	pair<string,string> getNextTwoRelationBindings();

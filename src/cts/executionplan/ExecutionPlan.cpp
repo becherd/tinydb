@@ -168,19 +168,45 @@ void ExecutionPlan::applySelections(){
 			//replace base relation with relations after selection
 			joinPlan.at(index).second = move(select);
 
-
 			if(joinPlan.at(index).second==NULL){
 				throw "";
 			}
 		}
 }
 
+void ExecutionPlan::printJoinTree(){
+	std::string jt = joinTree;
+
+	std::string joinSymbol=" |><|";
+	bool closedBracket =false;
+	for(unsigned int i=0; i<jt.size(); i++){
+
+
+		if((jt[i] == ' ') || (closedBracket && jt[i] != ')')){
+
+			jt.insert(i, joinSymbol);
+			i=i+joinSymbol.size();
+		}
+
+		if(jt[i] == ')'){
+					closedBracket=true;
+				}
+				else{
+					closedBracket=false;
+				}
+
+	}
+
+	cout << "---"<<endl;
+	cout << "Join tree: " << jt << endl;
+}
 
 void ExecutionPlan::applyJoins(){
 	vector<pair<SQLParser::RelationAttribute, SQLParser::RelationAttribute>> joinConditions;
 
-		cout << "---"<<endl;
-		cout << "Join tree: " << joinTree << endl;
+
+		printJoinTree();
+
 		while(joinTree.find("(")!=std::string::npos){
 
 
@@ -225,12 +251,12 @@ void ExecutionPlan::applyJoins(){
 		vector<string> bindingsLeftTable = getBindings(nextRelationBindings.first);
 		vector<string> bindingsRightTable = getBindings(nextRelationBindings.second);
 
-		cout<<"Bindings Left Table"<<endl;
+		cout<<"Bindings Left Table: ";
 		for(unsigned int f=0; f<bindingsLeftTable.size(); f++){
 		cout << bindingsLeftTable[f]<<" ";
 		}
 		cout << endl;
-		cout<<"Bindings Right Table"<<endl;
+		cout<<"Bindings Right Table: ";
 			for(unsigned int f=0; f<bindingsRightTable.size(); f++){
 			cout << bindingsRightTable[f]<<" ";
 			}
@@ -304,9 +330,11 @@ void ExecutionPlan::applyJoins(){
 		joinPlan.push_back({newRelationBinding, move(vec_tmp[vec_tmp.size()-1])});
 
 		joinTree=replaceFirst(joinTree, "("+nextRelationBindings.first+" "+nextRelationBindings.second+")", newRelationBinding)+" ";
+		joinTree.erase(joinTree.find_last_not_of(" ")+1);
 
-		cout << "---"<<endl;
-		cout << "Join tree: " << joinTree << endl;
+
+
+		printJoinTree();
 
 	}
 }
