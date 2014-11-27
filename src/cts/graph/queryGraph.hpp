@@ -14,6 +14,7 @@
 #include "Graph.hpp"
 #include "cts/parser/SQLParser.hpp"
 #include "operator/Tablescan.hpp"
+#include "cts/joininfos/joinInfos.hpp"
 #include "Database.hpp"
 
 using namespace std;
@@ -24,6 +25,7 @@ private:
 	Graph* g;
 	Database * db;
 	SQLParser::Result res;
+	joinInfos* info;
 	public:
 		queryGraph(SQLParser::Result &res, Database &db);
 		~queryGraph();
@@ -34,11 +36,6 @@ private:
 		void addVertices(std::vector<SQLParser::Relation> relations);
 		void addEdges(vector<pair<SQLParser::RelationAttribute, SQLParser::RelationAttribute>> joinConditions);
 		void addSelections(vector<pair<SQLParser::RelationAttribute, SQLParser::Constant>> selections);
-		unsigned int getSizeOfRelation(std::string relationName);
-		unsigned int getNumberOfDistinctValues(std::string relationName, std::string column);
-		double computeSelectivity(std::string relationName, std::string column);
-		double computeSelectivity(std::string relationName1, std::string column1, std::string relationName2, std::string column2);
-		string getRelationName(string binding);
 };
 
 

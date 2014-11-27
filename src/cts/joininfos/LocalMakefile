@@ -1,0 +1,2 @@
+obj_joininfos:=					\
+	bin/cts/joininfos/joinInfos.o

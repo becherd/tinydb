@@ -11,6 +11,7 @@ queryGraph::queryGraph(SQLParser::Result &result, Database &database) {
 	g = new Graph();
 	queryGraph::db = &database;
 	queryGraph::res = result;
+	info = new joinInfos(*db);
 }
 
 queryGraph::~queryGraph() {
@@ -35,23 +36,6 @@ string queryGraph::generateQueryGraph() {
 	return g->Greedy_operator_ordering();
 }
 
-unsigned int queryGraph::getSizeOfRelation(std::string relationName) {
-	Table& t = queryGraph::db->getTable(relationName);
-	return t.getCardinality();
-
-}
-
-unsigned int queryGraph::getNumberOfDistinctValues(std::string relationName,
-		std::string column) {
-	Table& t = queryGraph::db->getTable(relationName);
-
-	unsigned int numberOfDistinctValues = t.getAttribute(
-			t.findAttribute(column)).getUniqueValues();
-
-	return numberOfDistinctValues;
-
-}
-
 //add vertices to the graph. The names of the vertices are the bindings of the given relations
 void queryGraph::addVertices(std::vector<SQLParser::Relation> relations) {
 	string name;
@@ -60,7 +44,7 @@ void queryGraph::addVertices(std::vector<SQLParser::Relation> relations) {
 	for (unsigned int i = 0; i < relations.size(); i++) {
 		name = relations.at(i).name;
 		binding = relations.at(i).binding;
-		cardinality = getSizeOfRelation(name);
+		cardinality = info->getSizeOfRelation(name);
 		queryGraph::g->create_new_vertex(cardinality, binding);
 	}
 }
@@ -81,8 +65,8 @@ void queryGraph::addEdges(
 		column2 = joinConditions.at(i).second.name;
 		name = joinConditions.at(i).first.getName() + "="
 				+ joinConditions.at(i).second.getName();
-		selectivity = computeSelectivity(getRelationName(vertex1), column1,
-				getRelationName(vertex2), column2);
+		selectivity = info->computeSelectivity(joinInfos::getRelationName(vertex1, queryGraph::res), column1,
+				joinInfos::getRelationName(vertex2, queryGraph::res), column2);
 		queryGraph::g->create_new_edge(vertex1, vertex2, selectivity, name);
 	}
 }
@@ -102,40 +86,9 @@ void queryGraph::addSelections(
 		column = selections.at(i).first.name;
 		name = selections.at(i).first.getName() + "="
 				+ selections.at(i).second.value;
-		selectivity = computeSelectivity(getRelationName(vertex), column);
+		selectivity = info->computeSelectivity(joinInfos::getRelationName(vertex, queryGraph::res), column);
 		queryGraph::g->create_new_edge(vertex, vertex, selectivity, name);
 	}
 }
 
-string queryGraph::getRelationName(string binding) {
-	string name = "";
-	for (unsigned int i = 0; i < queryGraph::res.relations.size(); i++) {
-		if (res.relations.at(i).binding.compare(binding) == 0) {
-			name = res.relations.at(i).name;
-		}
-	}
-	return name;
-}
-
-//compute the expected selectivity of selection on the given column
-double queryGraph::computeSelectivity(std::string relationName,
-		std::string column) {
-
-	double numberOfDistinctValues = (double) getNumberOfDistinctValues(
-			relationName, column);
-	double selectivity = 1.0 / numberOfDistinctValues;
-
-	return selectivity;
-}
-//compute the expected selectivity of the join between the given relations on the given columns
-double queryGraph::computeSelectivity(std::string relationName1,
-		std::string column1, std::string relationName2, std::string column2) {
-	double numberOfDistinctValues1 = (double) getNumberOfDistinctValues(
-			relationName1, column1);
-	double numberOfDistinctValues2 = (double) getNumberOfDistinctValues(
-			relationName2, column2);
-	double selectivity = 1.0
-			/ ((double) max(numberOfDistinctValues1, numberOfDistinctValues2));
-	return selectivity;
-}
 
