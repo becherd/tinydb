@@ -30,6 +30,18 @@ dpSize::dpEntry::dpEntry(vector<string> relationSet, string bestTree, double cos
 	this->size=size;
 }
 
+
+void dpSize::dpEntry::toString(){
+	cout << "| {";
+	for(unsigned int i=0; i<this->relationSet.size(); i++){
+		cout << this->relationSet[i];
+		if(i<this->relationSet.size()-1){
+			cout<<",";
+		}
+	}
+	cout <<"}" << " | " << this->bestTree << " | " << this->cost << " | " << this->size << " |" << endl;
+}
+
 /*
 template <string*>
 inline bool operator<(const string& s1, const string& s2){
@@ -116,10 +128,6 @@ void dpSize::initDpTable(){
 
 		dpTable[0]->push_back(e);
 	}
-
-	for(auto &dpe : *dpTable[0]){
-	cout << "afterwards: "<< (*dpe).relationSet[0] << " " << (*dpe).bestTree << " " << (*dpe).cost << " " << (*dpe).size << endl;
-	}
 }
 
 
@@ -143,16 +151,6 @@ void dpSize::executeDpSize(){
 				for(auto rightRelation=rightRelationSet.begin();rightRelation!=rightRelationSet.end();rightRelation++){
 
 					vector<pair<SQLParser::RelationAttribute, SQLParser::RelationAttribute>> joinConditions;
-					if(*leftRelation == NULL || *rightRelation == NULL){
-						cout << "Hilfe";
-					}
-
-					cout << "i: " << i << endl;
-					cout << "j: " << j << endl;
-
-					cout << "Relation Set Size:" <<  (*leftRelation)->relationSet.size()<<endl;
-					cout << "Relation Set: " << (*leftRelation)->relationSet.at(0)<<endl;
-
 
 					joinConditions= joinInfos::getJoinConditions((*leftRelation)->relationSet, (*rightRelation)->relationSet, res);
 
@@ -187,8 +185,6 @@ void dpSize::executeDpSize(){
 					//fill new dpEntry
 					e = new dpEntry(*relationSet, bestTree, cost, size);
 
-
-
 					auto cmp = find(dpTable[i]->begin(), dpTable[i]->end(), e);
 
 					if(cmp==dpTable[i]->end()){
@@ -200,19 +196,27 @@ void dpSize::executeDpSize(){
 						dpTable[i]->erase(cmp);
 						dpTable[i]->push_front(e);
 					}
-
 				}
 			}
 		}
 	}
+
+	printDpTable();
 }
 
 
 
-
+//prints the current dpTable
 void dpSize::printDpTable(){
 	cout << "Relation Set | Best Join Tree | Cost" << endl;
 
-	//todo
+	for(auto &d : dpTable){
+
+		 for (list<dpEntry*>::iterator iter = d->begin(); iter != d->end(); iter++){
+		    (**iter).dpSize::dpEntry::toString();
+		 }
+	}
 }
+
+
 

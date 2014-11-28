@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include <list>
+#include <iostream>
 #include <algorithm>
 #include "cts/parser/SQLParser.hpp"
 #include "cts/joininfos/joinInfos.hpp"
@@ -44,6 +45,7 @@ public:
 		double size;
 
 		dpEntry(vector<string> relationSet, string bestTree, double cost, double size);
+		void toString();
 	};
 
 
