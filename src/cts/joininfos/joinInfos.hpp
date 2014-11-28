@@ -33,6 +33,7 @@ public:
 		double computeSelectivity(std::string relationName, std::string column);
 		double computeSelectivity(std::string relationName1, std::string column1, std::string relationName2, std::string column2);
 		static string getRelationName(string binding, SQLParser::Result res);
+		static vector<pair<SQLParser::RelationAttribute, SQLParser::RelationAttribute>> getJoinConditions(vector<string> bindingsLeft, vector<string> bindingsRight, SQLParser::Result res);
 
 private:
 

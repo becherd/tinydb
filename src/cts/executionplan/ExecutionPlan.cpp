@@ -44,9 +44,6 @@ pair<string, string> ExecutionPlan::splitStringAtFirstDelimiter(string s, string
 
 
 void ExecutionPlan::scanTables() {
-
-	//vector<SQLParser::Relation> relations = r.relations;
-	// war falsch, da es Elemente aus r.relations wild durch den Speicher kopiert
 		
 		unsigned int i;
 		for (i = 0; i < r.relations.size(); i++) {

@@ -7,6 +7,7 @@
 #include "cts/semana/SemanticAnalysis.hpp"
 #include "cts/executionplan/ExecutionPlan.hpp"
 #include "cts/graph/queryGraph.hpp"
+#include "cts/dp/dpSize.hpp"
 
 using namespace std;
 
@@ -101,6 +102,9 @@ int main(int argc, char* argv[]){
 
 	ExecutionPlan ep(joinTree, res, db);
 	ep.generateExecutionPlan();
+
+	dpSize dpS(res, db);
+	dpS.executeDpSize();
 
 	return 0;
 

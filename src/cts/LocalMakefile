@@ -3,3 +3,4 @@ include src/cts/semana/LocalMakefile
 include src/cts/executionplan/LocalMakefile
 include src/cts/graph/LocalMakefile
 include src/cts/joininfos/LocalMakefile
+include src/cts/dp/LocalMakefile
