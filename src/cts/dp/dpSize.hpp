@@ -45,6 +45,7 @@ public:
 		double size;
 
 		dpEntry(vector<string> relationSet, string bestTree, double cost, double size);
+
 		void toString();
 	};
 
@@ -53,6 +54,8 @@ private:
 
 	vector<list<dpSize::dpEntry*>* > dpTable;
 
+	bool equalRelationSetsFound(const dpSize::dpEntry &e1, const dpSize::dpEntry &e2);
+	double getSizeOfRelationAfterSelection(string binding, SQLParser::Result res);
 	void initDpTable();
 	void printDpTable();
 

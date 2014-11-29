@@ -42,46 +42,13 @@ void dpSize::dpEntry::toString(){
 	cout <<"}" << " | " << this->bestTree << " | " << this->cost << " | " << this->size << " |" << endl;
 }
 
-/*
-template <string*>
-inline bool operator<(const string& s1, const string& s2){
-	return s1.compare(s2)<0;
-}
-
-template <string*>
-inline bool operator==(const string& s1, const string& s2){
-	return s1.compare(s2)==0;
-}
-*/
-
 bool compare(string s1, string s2){
 	return (s1.compare(s2)<0);
 }
 
-template <struct dpSize::dpEntry*>
-inline bool operator<(const struct dpSize::dpEntry &e1, const struct dpSize::dpEntry &e2){
-	auto iter1 = e1.relationSet.begin();
-	auto iter2 = e2.relationSet.begin();
 
-	while(iter1 != e1.relationSet.end() && iter2 != e2.relationSet.end()){
-		if(iter1->compare(*iter2)<0){
-			return true;
-		}
-		else if(iter1->compare(*iter2)>0){
-			return false;
-		}
-		++iter1;
-		++iter2;
-	}
-	if(iter2!=e2.relationSet.end()){
-		return true;
-	}
-    return false;
-}
+bool dpSize::equalRelationSetsFound(const dpSize::dpEntry &e1, const dpSize::dpEntry &e2){
 
-
-template <struct dpSize::dpEntry*>
-inline bool operator==(const struct dpSize::dpEntry &e1, const struct dpSize::dpEntry &e2){
 	auto iter1 = e1.relationSet.begin();
 	auto iter2 = e2.relationSet.begin();
 
@@ -96,14 +63,10 @@ inline bool operator==(const struct dpSize::dpEntry &e1, const struct dpSize::dp
 		return true;
 	}
     return false;
-}
+   }
 
 
 void dpSize::initDpTable(){
-	//****
-	//todo selections
-	//****
-
 
 	//initialize empty lists
 	for(unsigned int i=0;i<res.relations.size();i++){
@@ -117,9 +80,9 @@ void dpSize::initDpTable(){
 	string relationBinding;
 
 	for(unsigned int i=0; i<res.relations.size(); i++){
-
 		relationBinding = res.relations.at(i).binding;
-		size = (double) info->getSizeOfRelation(joinInfos::getRelationName(relationBinding, res));
+
+		size=getSizeOfRelationAfterSelection(relationBinding, res);
 
 		relationSet = new vector<string>();
 		relationSet->push_back(relationBinding);
@@ -130,7 +93,18 @@ void dpSize::initDpTable(){
 	}
 }
 
-
+//returns the size after selection
+double dpSize::getSizeOfRelationAfterSelection(string binding, SQLParser::Result res){
+	string relationName = joinInfos::getRelationName(binding, res);
+	double size = (double) info->getSizeOfRelation(relationName);
+	for(auto &s : res.selections){
+		if(s.first.relation.compare(binding)==0){
+			//selection found
+			size=size*info->computeSelectivity(relationName, s.first.name);
+		}
+	}
+	return size;
+}
 
 void dpSize::executeDpSize(){
 	initDpTable();
@@ -181,20 +155,30 @@ void dpSize::executeDpSize(){
 
 					//compute new join tree
 					string bestTree= (((string("(")+=(*leftRelation)->bestTree)+=string(" "))+=(*rightRelation)->bestTree)+=string(")");
-					cout << "bestTree " << bestTree << endl;
+
 					//fill new dpEntry
 					e = new dpEntry(*relationSet, bestTree, cost, size);
 
-					auto cmp = find(dpTable[i]->begin(), dpTable[i]->end(), e);
 
-					if(cmp==dpTable[i]->end()){
-						//nothing found with same relations
-						dpTable[i]->push_front(e);
+					bool found=false;
+					list<dpEntry*>::iterator iter;
+
+					for(iter=dpTable[i]->begin(); iter!=dpTable[i]->end(); iter++)
+					{
+					     found=equalRelationSetsFound(**iter, *e);
+					     if(found){
+					    	 break;
+					     }
 					}
-					else if((*cmp)-> cost > e->cost){
+
+					if(!found){
+						//nothing found with same relations
+						dpTable[i]->push_back(e);
+					}
+					else if((*iter)->cost > e->cost){
 						//we found a cheaper solution
-						dpTable[i]->erase(cmp);
-						dpTable[i]->push_front(e);
+						dpTable[i]->erase(iter);
+						dpTable[i]->push_back(e);
 					}
 				}
 			}
@@ -208,7 +192,7 @@ void dpSize::executeDpSize(){
 
 //prints the current dpTable
 void dpSize::printDpTable(){
-	cout << "Relation Set | Best Join Tree | Cost" << endl;
+	cout << "Relation Set | Best Join Tree | Cost | Size" << endl;
 
 	for(auto &d : dpTable){
 
