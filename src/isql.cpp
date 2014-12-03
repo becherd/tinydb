@@ -97,14 +97,20 @@ int main(int argc, char* argv[]){
 
 
 
-	queryGraph q(res, db);
-	string joinTree= q.generateQueryGraph();
+	string joinTree;
+	/*
+	 * uncomment this if you want to use GOO to produce the query graph
+	 */
+	//queryGraph q(res, db);
+	//joinTree= q.generateQueryGraph();
+
+	dpSize dpS(res, db);
+	joinTree=dpS.executeDpSize();
 
 	ExecutionPlan ep(joinTree, res, db);
 	ep.generateExecutionPlan();
 
-	dpSize dpS(res, db);
-	dpS.executeDpSize();
+
 
 	return 0;
 

@@ -12,13 +12,13 @@
 #include <string>
 #include <list>
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include "cts/parser/SQLParser.hpp"
 #include "cts/joininfos/joinInfos.hpp"
 #include "Database.hpp"
 
 using namespace std;
-using namespace std::rel_ops;
 
 class dpSize{
 
@@ -33,7 +33,7 @@ public:
 	dpSize(SQLParser::Result &res, Database &db);
 	~dpSize();
 
-	void executeDpSize();
+	string executeDpSize();
 
 	struct dpEntry{
 		vector<string> relationSet;
@@ -45,8 +45,8 @@ public:
 		double size;
 
 		dpEntry(vector<string> relationSet, string bestTree, double cost, double size);
+		string relationSetToString();
 
-		void toString();
 	};
 
 
@@ -58,7 +58,8 @@ private:
 	double getSizeOfRelationAfterSelection(string binding, SQLParser::Result res);
 	void initDpTable();
 	void printDpTable();
-
+	vector<unsigned int> getWidthOfColumns(string rs, string bt, string c, string s);
+	void printDpTableRow(string rs, string bt, string c, string s, vector<unsigned int> columnWidths);
 };
 
 

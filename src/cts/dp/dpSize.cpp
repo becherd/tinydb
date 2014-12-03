@@ -30,17 +30,25 @@ dpSize::dpEntry::dpEntry(vector<string> relationSet, string bestTree, double cos
 	this->size=size;
 }
 
+//returns a string representation of the relation set of this dpEntry
+string dpSize::dpEntry::relationSetToString(){
+	string thisRelationSet="{";
 
-void dpSize::dpEntry::toString(){
-	cout << "| {";
 	for(unsigned int i=0; i<this->relationSet.size(); i++){
-		cout << this->relationSet[i];
+		thisRelationSet = thisRelationSet + this->relationSet[i];
 		if(i<this->relationSet.size()-1){
-			cout<<",";
+			thisRelationSet = thisRelationSet+",";
 		}
 	}
-	cout <<"}" << " | " << this->bestTree << " | " << this->cost << " | " << this->size << " |" << endl;
+	thisRelationSet = thisRelationSet+"}";
+	return thisRelationSet;
 }
+
+
+
+
+
+
 
 bool compare(string s1, string s2){
 	return (s1.compare(s2)<0);
@@ -106,7 +114,7 @@ double dpSize::getSizeOfRelationAfterSelection(string binding, SQLParser::Result
 	return size;
 }
 
-void dpSize::executeDpSize(){
+string dpSize::executeDpSize(){
 	initDpTable();
 
 	list<dpEntry*> leftRelationSet;
@@ -186,21 +194,91 @@ void dpSize::executeDpSize(){
 	}
 
 	printDpTable();
+
+
+	list<dpEntry*>::iterator iter = dpTable[dpTable.size()-1]->begin();
+	return (**iter).bestTree;
 }
 
 
 
 //prints the current dpTable
 void dpSize::printDpTable(){
-	cout << "Relation Set | Best Join Tree | Cost | Size" << endl;
+	cout << "\nDPTable:"<<endl;
+
+	string hline;
+
+	string rs = "Relation Set";
+	string bt = "Best Join Tree";
+	string c = "Cost";
+	string s = "Size";
+
+	vector<unsigned int> columnWidths = getWidthOfColumns(rs, bt, c, s);
+	hline=" "+string(columnWidths[0]+columnWidths[1]+columnWidths[2]+columnWidths[3]+13, '-');
+
+	cout << hline << endl;
+	printDpTableRow(rs, bt, c, s, columnWidths);
+	cout << hline << endl;
+
 
 	for(auto &d : dpTable){
 
 		 for (list<dpEntry*>::iterator iter = d->begin(); iter != d->end(); iter++){
-		    (**iter).dpSize::dpEntry::toString();
+			 rs=(**iter).relationSetToString();
+			 bt=(**iter).bestTree;
+			 c=to_string((**iter).cost);
+			 s=to_string((**iter).size);
+
+		     printDpTableRow(rs, bt, c, s, columnWidths);
 		 }
 	}
+	cout << hline << endl;
+	cout << endl;
 }
 
+//print one row in the dpTable. The requested strings specify the four columns.
+void dpSize::printDpTableRow(string rs, string bt, string c, string s,vector<unsigned int> columnWidths){
+    const char separator    = ' ';
+	cout << " | " << right << setw(columnWidths[0]) << setfill(separator) << rs;
+	cout << " | " << right << setw(columnWidths[1]) << setfill(separator) << bt;
+	cout << " | " << right << setw(columnWidths[2]) << setfill(separator) << c;
+	cout << " | " << right << setw(columnWidths[3]) << setfill(separator) << s;
+	cout << " |" << endl;
+}
+
+
+//returns the maximum entry width for each column. Needed to print the columns beautifully aligned.
+vector<unsigned int> dpSize::getWidthOfColumns(string rs, string bt, string c, string s){
+	vector<unsigned int> columnWidths;
+
+	columnWidths.push_back(rs.size());
+	columnWidths.push_back(bt.size());
+	columnWidths.push_back(c.size());
+	columnWidths.push_back(s.size());
+
+	for(auto &d : dpTable){
+
+			 for (list<dpEntry*>::iterator iter = d->begin(); iter != d->end(); iter++){
+				 rs=(**iter).relationSetToString();
+				 bt=(**iter).bestTree;
+				 c=to_string((**iter).cost);
+				 s=to_string((**iter).size);
+			    if(rs.size()>columnWidths[0]){
+			    	columnWidths[0] = rs.size();
+			    }
+			    if(bt.size()>columnWidths[1]){
+			    	columnWidths[1] = bt.size();
+			    }
+			    if(c.size()>columnWidths[2]){
+			    	columnWidths[2] = c.size();
+			    }
+			    if(s.size()>columnWidths[3]){
+			    	columnWidths[3] = s.size();
+			    }
+			 }
+		}
+
+	return columnWidths;
+}
 
 

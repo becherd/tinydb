@@ -379,12 +379,18 @@ void ExecutionPlan::generateExecutionPlan() {
 
 	unique_ptr<Projection> projection = applyProjection();
 
+
 	//Print result
 	cout << "\nResult of the query: "<<endl;
 	Printer out(move(projection));
 
 	out.open();
-	while (out.next());
+	unsigned int numberOfRows = 0;
+	while (out.next()){
+		numberOfRows ++;
+	}
+	 cout << "Returned " << numberOfRows << " rows"<<endl;
+
 	out.close();
 
 }
