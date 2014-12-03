@@ -149,7 +149,7 @@ string dpSize::executeDpSize(){
 					}
 
 					double size = selectivity * ((*leftRelation)->size) * ((*rightRelation)->size);
-					double cost = (*leftRelation)->cost + (*leftRelation)->cost + size;
+					double cost = (*leftRelation)->cost + (*rightRelation)->cost + size;
 
 					relationSet = new vector<string>();
 					for(auto &r : (*leftRelation)->relationSet){
