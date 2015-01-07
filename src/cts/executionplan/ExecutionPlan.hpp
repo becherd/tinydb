@@ -39,11 +39,8 @@ private:
 	void printJoinTree();
 	unique_ptr<Projection> applyProjection();
 	const Register* getRegister (SQLParser::RelationAttribute attr);
-	pair<string,string> getNextTwoRelationBindings();
-	pair<string, string> splitStringAtFirstDelimiter(string s, string delimiter);
-	vector<string> getBindings(string bindings);
-	string generateNewRelationBinding(string bindingLeft, string bindingRight);
-	string replaceFirst(string s, string pattern, string replacement);
+	static pair<string, string> splitStringAtFirstDelimiter(string s, string delimiter);
+
 	bool vectorContainsAttribute(vector<SQLParser::RelationAttribute> vector,
 			SQLParser::RelationAttribute attribute);
 
@@ -51,9 +48,10 @@ public:
 	ExecutionPlan(string joinTree, SQLParser::Result& r,Database& db);
 	~ExecutionPlan(){};
 
-
-
-
+	static string replaceFirst(string s, string pattern, string replacement);
+	static string generateNewRelationBinding(string bindingLeft, string bindingRight);
+	static vector<string> getBindings(string bindings);
+	static pair<string,string> getNextTwoRelationBindings(string JoinTree);
 	void generateExecutionPlan ();
 };
 

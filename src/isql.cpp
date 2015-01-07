@@ -8,6 +8,8 @@
 #include "cts/executionplan/ExecutionPlan.hpp"
 #include "cts/graph/queryGraph.hpp"
 #include "cts/dp/dpSize.hpp"
+#include "cts/quickpick/quickPick.hpp"
+
 
 using namespace std;
 
@@ -107,8 +109,12 @@ int main(int argc, char* argv[]){
 	dpSize dpS(res, db);
 	joinTree=dpS.executeDpSize();
 
-	ExecutionPlan ep(joinTree, res, db);
-	ep.generateExecutionPlan();
+	quickPick qP(res,db);
+	joinTree=qP.executeQuickPick(100);
+	cout << "JoinTree: " << joinTree << endl;
+
+	//ExecutionPlan ep(joinTree, res, db);
+	//ep.generateExecutionPlan();
 
 
 

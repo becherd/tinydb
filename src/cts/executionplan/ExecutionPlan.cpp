@@ -12,7 +12,7 @@ ExecutionPlan::ExecutionPlan(string joinTree, SQLParser::Result& r,Database& db)
 
 
 
-pair<string,string> ExecutionPlan::getNextTwoRelationBindings(){
+pair<string,string> ExecutionPlan::getNextTwoRelationBindings(string joinTree){
 	unsigned int indexOfLastOpeningBracket=0;
 	unsigned int indexOfClosingBracket=0;
 	for(unsigned int i= 0; i<joinTree.size(); i++){
@@ -27,7 +27,7 @@ pair<string,string> ExecutionPlan::getNextTwoRelationBindings(){
 
 	string join = joinTree.substr(indexOfLastOpeningBracket+1, indexOfClosingBracket-indexOfLastOpeningBracket-1);
 
-	pair<string, string> relationBindings = splitStringAtFirstDelimiter(join, " ");
+	pair<string, string> relationBindings = ExecutionPlan::splitStringAtFirstDelimiter(join, " ");
 
 
 	return relationBindings;
@@ -207,7 +207,7 @@ void ExecutionPlan::applyJoins(){
 		while(joinTree.find("(")!=std::string::npos){
 
 
-		pair<string,string> nextRelationBindings = getNextTwoRelationBindings();
+		pair<string,string> nextRelationBindings = ExecutionPlan::getNextTwoRelationBindings(joinTree);
 
 
 		unique_ptr<Operator> table_left;
@@ -413,7 +413,7 @@ string ExecutionPlan::generateNewRelationBinding(string bindingLeft, string bind
 string ExecutionPlan::replaceFirst(string s, string pattern, string replacement){
 	if(s.find(pattern)!=std::string::npos){
 	int start_pos=s.find(pattern);
-	s.replace(start_pos, pattern.size(), replacement);
+	s=s.replace(start_pos, pattern.size(), replacement);
 	}
 	return s;
 }

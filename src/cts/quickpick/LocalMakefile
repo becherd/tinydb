@@ -1,0 +1,3 @@
+obj_quickpick:=					\
+	bin/cts/quickpick/quickPick.o \
+	bin/cts/quickpick/unionfind.o
