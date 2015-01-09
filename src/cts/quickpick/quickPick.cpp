@@ -83,6 +83,8 @@ string quickPick::executeQuickPick(int n){
 }
 
 void quickPick::printDistribution(vector<double> costLog){
+	cout << "QuickPick" << endl;
+	cout << "Cost distribution: " << endl;
 	vector<int> costLogInteger;
 
 	for(unsigned int i=0; i<costLog.size(); i++){

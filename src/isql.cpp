@@ -111,7 +111,6 @@ int main(int argc, char* argv[]){
 
 	quickPick qP(res,db);
 	joinTree=qP.executeQuickPick(100);
-	cout << "JoinTree: " << joinTree << endl;
 
 	//ExecutionPlan ep(joinTree, res, db);
 	//ep.generateExecutionPlan();
